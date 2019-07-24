@@ -1,0 +1,119 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+apply from: 'publish.gradle'
+
+apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    def ext = rootProject.ext
+
+    android {
+        compileSdkVersion 27
+        buildToolsVersion '27.0.3'
+
+        defaultConfig {
+            minSdkVersion 16
+            targetSdkVersion 26
+            versionCode 42
+            versionName '2.1.0'
+            group groupId
+            version versionName
+            buildConfigField 'String', "SDK_NAME", "\"appcenter.react-native\""
+
+            ndk {
+                abiFilters "armeabi-v7a", "x86"
+            }
+            consumerProguardFiles 'proguard-rules.pro'
+        }
+    }
+
+    task sourcesJar(type: Jar) {
+        afterEvaluate {
+            from android.sourceSets.main.java.srcDirs
+            classifier = 'sources'
+        }
+    }
+
+    bintray {
+        user = ext.bintrayUser
+        key = ext.bintrayKey
+
+        configurations = ['archives']
+
+        publish = true
+
+        pkg {
+            repo = ext.bintrayRepo
+            name = "appcenter-react-native"
+            userOrg = ext.bintrayUserOrg
+            vcsUrl = ext.gitUrl
+            websiteUrl = ext.siteUrl
+            licenses = [licenseCode]
+        }
+    }
+
+    install {
+        repositories.mavenInstaller {
+            pom {
+                //noinspection GroovyAssignabilityCheck
+                project {
+                    packaging 'aar'
+
+                    //noinspection GroovyAssignabilityCheck
+                    name project.name
+                    description = sdkDescription
+                    url = siteUrl
+
+                    licenses {
+                        license {
+                            //noinspection GroovyAssignabilityCheck
+                            name licenseName
+                            url licenseSite
+                        }
+                    }
+                    developers {
+                        developer {
+                            id developerId
+                            //noinspection GroovyAssignabilityCheck
+                            name developerName
+                            email developerEmail
+                        }
+                    }
+                    scm {
+                        connection gitUrl
+                        developerConnection gitUrl
+                        url siteUrl
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    api 'com.microsoft.appcenter:appcenter:2.1.0'
+}
+
+artifacts {
+    archives sourcesJar
+}
